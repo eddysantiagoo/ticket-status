@@ -226,14 +226,14 @@ export const TaskDetail = ({ taskData, comments, searchTaskId }: Props) => {
                               </div>
                             ) : (
                               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 text-white flex items-center justify-center shadow-sm border-2 border-white dark:border-neutral-700">
-                                {comment.user.username.charAt(0).toUpperCase()}
+                                S
                               </div>
                             )}
                           </div>
                           <div className="flex-1">
                             <div className="flex items-center mb-1">
                               <h3 className="font-medium text-gray-900 dark:text-white">
-                                {comment.user.username}
+                                Solicitante
                               </h3>
                             </div>
                             <div className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed">

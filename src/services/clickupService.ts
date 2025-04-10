@@ -1,5 +1,7 @@
 import type { ClickUpComment, ClickUpTask } from "@/types/ClickUpTask";
 import toast from "react-hot-toast";
+import { renderToStaticMarkup } from "react-dom/server";
+import { NotificationEmail } from "../../emails/notification";
 
 export const clickupService = {
   async getTaskDetails(taskId: string): Promise<ClickUpTask> {
@@ -60,12 +62,28 @@ export const clickupService = {
         body: JSON.stringify({ comment_text: comment }),
       }
     );
-    
+
     if (!resp.ok) {
       toast.error("Error al enviar el comentario");
       throw new Error(`Error: ${resp.status} - ${resp.statusText}`);
-    }else{
+    } else {
       toast.success("Comentario enviado!");
+
+      try {
+        // Use renderToStaticMarkup instead of render to avoid compatibility issues
+        const emailHtml = renderToStaticMarkup(
+          NotificationEmail({
+            taskId,
+          })
+        );
+
+        await this.sendEmailNotification({
+          subject: `Actualización de tu soporte #${taskId} - Gestoru`,
+          html: emailHtml,
+        });
+      } catch (error) {
+        console.error("Failed to send email notification:", error);
+      }
     }
 
     return resp.json();
@@ -94,5 +112,37 @@ export const clickupService = {
     }
 
     return resp.json();
+  },
+
+  async sendEmailNotification({
+    to = ["eddysantiagogh@gmail.com"],
+    subject,
+    html,
+    text,
+  }: {
+    to?: string[];
+    subject: string;
+    html: string;
+    text?: string;
+  }) {
+    try {
+      const response = await fetch("http://localhost:3001/api/send-email", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ to, subject, html, text }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to send email");
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error sending email notification:", error);
+      throw error;
+    }
   },
 };
